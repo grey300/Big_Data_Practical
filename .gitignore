@@ -1,0 +1,16 @@
+# Hadoop distribution (binary)
+hadoop-3.3.6/
+
+# Build outputs
+**/bin/
+**/pkg/
+**/*.class
+**/*.jar
+**/hadoop-classpath/
+
+# IDE
+**/.vscode/
+
+# OS junk
+.DS_Store
+Thumbs.db

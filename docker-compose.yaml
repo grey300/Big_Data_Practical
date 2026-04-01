@@ -1,0 +1,63 @@
+services:
+  namenode:
+    image: apache/hadoop:3.3.6
+    hostname: namenode
+    volumes:
+      - ./Makefile:/opt/hadoop/Makefile
+      - namenode_data:/tmp/hadoop-hadoop/dfs/name
+    command: ["hdfs", "namenode"]
+    ports:
+      - 9870:9870
+    env_file:
+      - ./config
+    environment:
+      ENSURE_NAMENODE_DIR: "/tmp/hadoop-hadoop/dfs/name"
+
+  datanode1:
+    image: apache/hadoop:3.3.6
+    volumes:
+      - datanode_data:/tmp/hadoop-hadoop/dfs/data
+    command: ["hdfs", "datanode"]
+    env_file:
+      - ./config
+
+  resourcemanager:
+    image: apache/hadoop:3.3.6
+    hostname: resourcemanager
+    command: ["yarn", "resourcemanager"]
+    ports:
+      - 8088:8088
+    env_file:
+      - ./config
+
+  nodemanager:
+    image: apache/hadoop:3.3.6
+    command: ["yarn", "nodemanager"]
+    env_file:
+      - ./config
+
+  spark-master:
+    image: apache/spark:3.5.0
+    hostname: spark-master
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.master.Master"]
+    ports:
+      - 8080:8080
+      - 4040:4040
+      - 7077:7077
+    depends_on:
+      - namenode
+      - resourcemanager
+
+  spark-worker:
+    image: apache/spark:3.5.0
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.worker.Worker", "spark://spark-master:7077"]
+    depends_on:
+      - spark-master
+
+volumes:
+  namenode_data:
+  datanode_data:
